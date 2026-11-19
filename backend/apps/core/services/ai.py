@@ -47,7 +47,7 @@ def generate(project,question:str,conversation=None):
  if spent+estimated_ceiling>budget:raise AIUnavailable('Insufficient remaining AI budget')
  started=time.monotonic()
  try:
-  with httpx.Client(timeout=20) as client:
+  with httpx.Client(timeout=httpx.Timeout(20.0, connect=10.0, read=60.0)) as client:
    resp=client.post('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',headers={'x-goog-api-key':os.environ['GEMINI_API_KEY']},json={'systemInstruction':{'parts':[{'text':system}]},'contents':[{'parts':[{'text':prompt}]}],'generationConfig':{'temperature':min(max(config.temperature,0),0.6),'maxOutputTokens':int(os.getenv('AI_MAX_OUTPUT_TOKENS','500'))}})
    resp.raise_for_status();data=resp.json()
   answer=data['candidates'][0]['content']['parts'][0]['text'][:config.max_response_length]
